@@ -13,7 +13,8 @@ TARGET_ARCH=-mmcu=atmega8
 CXX=avr-g++
 CXXFLAGS=-Os -g -Wall -ffunction-sections -fdata-sections -mcall-prologues $(DEFINES)
 AVRDUDE_DEVICE ?= /dev/ttyUSB0
-AVRDUDE     = avrdude -p m8 -c stk500v2 -P $(AVRDUDE_DEVICE)
+AVRPROGRAMMER ?= stk500v2
+AVRDUDE     = avrdude -p m8 -c $(AVRPROGRAMMER) -P $(AVRDUDE_DEVICE)
 FLASH_CMD   = $(AVRDUDE) -e -U flash:w:main.hex
 LINK=avr-g++ -g $(TARGET_ARCH) -Wl,-gc-sections
 OBJECTS=ft-main.o serial-com.o
