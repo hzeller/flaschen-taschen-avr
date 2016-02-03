@@ -64,5 +64,9 @@ clean:
 # 2 cksel2	1 + internal RC oscillator  (page 30)  (8Mhz)
 # 1 cksel1	0/
 # 0 cksel0	0
-fuse:
+fuse8:
 	$(AVRDUDE) -U hfuse:w:0xd7:m -U lfuse:w:0xe4:m
+
+# similar for 328
+fuse328:
+	$(AVRDUDE) -U hfuse:w:0xd1:m -U lfuse:w:0xe2:m -U efuse:w:0xFD:m
