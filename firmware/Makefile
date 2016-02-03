@@ -5,19 +5,28 @@
 # a slow communication as we have pretty long lines and don't use RS422, so
 # consider to reduce the baudrate for production use to something that works on
 # the line.
-GIT_VERSION="$(shell git log --date=short --pretty=format:'[%h] @ %cd' -n 1)"
 
-DEFINES=-DGIT_VERSION='$(GIT_VERSION)' -DF_CPU=8000000UL -DSERIAL_BAUDRATE=115200
+BPS_RATE?=115200
 
-# Atmega ID can be '8' for Atmega8; 48, 88, 168, 328 for Atmega48 etc.
+# Atmega ID can be '8' for Atmega8; 48, 88, 168, 328, 328p for Atmega48 etc.
 ATMEGA_ID?=8
 
+# Paramters for avrdude
+AVRPROGRAMMER ?= stk500v2
+AVRDUDE_DEVICE ?= /dev/ttyUSB0
+
+GIT_VERSION="$(shell git log --date=short --pretty=format:'[%h] @ %cd' -n 1)"
+DEFINES=-DGIT_VERSION='$(GIT_VERSION)' -DF_CPU=8000000UL -DSERIAL_BAUDRATE=$(BPS_RATE)
+
+ifeq (x$(AVRDUDE_DEVICE),x)
+	AVR_PATH=
+else
+	AVR_PATH=-P $(AVRDUDE_DEVICE)
+endif
+AVRDUDE     = avrdude -p m$(ATMEGA_ID) -c $(AVRPROGRAMMER) $(AVR_PATH)
 TARGET_ARCH=-mmcu=atmega$(ATMEGA_ID)
 CXX=avr-g++
-CXXFLAGS=-Os -g -Wall -ffunction-sections -fdata-sections -mcall-prologues $(DEFINES)
-AVRDUDE_DEVICE ?= /dev/ttyUSB0
-AVRPROGRAMMER ?= stk500v2
-AVRDUDE     = avrdude -p m$(ATMEGA_ID) -c $(AVRPROGRAMMER) -P $(AVRDUDE_DEVICE)
+CXXFLAGS=-Os -g -Wall -ffunction-sections -fdata-sections -mcall-prologues $(DEFINES) $(TARGET_ARCH)
 FLASH_CMD   = $(AVRDUDE) -e -U flash:w:main.hex
 LINK=avr-g++ -g $(TARGET_ARCH) -Wl,-gc-sections
 OBJECTS=ft-main.o serial-com.o
@@ -36,6 +45,15 @@ main.hex: main.elf
 
 flash: main.hex
 	$(FLASH_CMD)
+
+%.o : %.cc compiler-flags
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+# Make sure to re-compile when the compiler flags change.
+compiler-flags: FORCE
+	@echo '$(CXXFLAGS)' | cmp -s - $@ || echo '$(CXXFLAGS)' > $@
+
+.PHONY: FORCE
 
 clean:
 	rm -f $(OBJECTS) main.elf main.hex
@@ -80,4 +98,4 @@ fuse8:
 # 1 bootsz0	0
 # 0 bootrst     0  # start at 000
 fuse328:
-	$(AVRDUDE) -U hfuse:w:0xd0:m -U lfuse:w:0xe2:m -U efuse:w:0xFD:m
+	$(AVRDUDE) -U hfuse:w:0xd0:m -U lfuse:w:0xe2:m -U efuse:w:0x05:m

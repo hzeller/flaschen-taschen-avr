@@ -8,9 +8,11 @@
 #include <avr/interrupt.h>
 #include <stdint.h>
 
+// TODO(hzeller): possibly it is simpler to define the
+// other way around for old-school atmegas.
 #if defined (__AVR_ATmega48__) || \
     defined (__AVR_ATmega88__) || \
-    defined (__AVR_ATmega168__) || \
+    defined (__AVR_ATmega168__) || defined (__AVR_ATmega168P__) || \
     defined (__AVR_ATmega328__) || defined (__AVR_ATmega328P__)
 // Translation atmega8 name -> atmega328
 #  define USART_RXC_vect USART_RX_vect
