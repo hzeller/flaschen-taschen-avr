@@ -77,12 +77,14 @@ SerialCom::SerialCom() : dropped_reads_(0) {
 #if FEATURE_BAUD_CHANGE
   SetBaud(SERIAL_BAUDRATE);
 #else
-  const uint16_t divider = (F_CPU  / 17 / SERIAL_BAUDRATE) - 1;
 # ifdef UBRRH
+  const uint16_t divider = (F_CPU  / 17 / SERIAL_BAUDRATE) - 1;
   UBRRH = (uint8_t)(divider >> 8);
   UBRRL = (uint8_t) divider;
 # else
-  UBRR0 = divider;
+  const uint16_t divider = (F_CPU  / 16 / SERIAL_BAUDRATE) - 1;
+  UBRR0H = (uint8_t)(divider >> 8);
+  UBRR0L = (uint8_t) divider;
 # endif
 #endif
   UCSRB = (1<<RXCIE) | (1<<RXEN) | (1<<TXEN);  // read and write; interrupt read
