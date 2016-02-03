@@ -67,6 +67,17 @@ clean:
 fuse8:
 	$(AVRDUDE) -U hfuse:w:0xd7:m -U lfuse:w:0xe4:m
 
-# similar for 328
+# similar for 328. Fuses on page 298
+# Fuse high byte:
+### Fuse high byte:
+# 7 rstdisbl	1   disable external reset: disabled (i.e.: reset enabled).
+# 6 dwen	1   debug wire.
+# - spien	0   serial programming: enabled.
+# 4 wdton	1   watchdog.
+#
+# 3 eesave      0   save eeprom on chip erase: enabled
+# 2 bootsz1	0	
+# 1 bootsz0	0
+# 0 bootrst     0  # start at 000
 fuse328:
-	$(AVRDUDE) -U hfuse:w:0xd1:m -U lfuse:w:0xe2:m -U efuse:w:0xFD:m
+	$(AVRDUDE) -U hfuse:w:0xd0:m -U lfuse:w:0xe2:m -U efuse:w:0xFD:m
