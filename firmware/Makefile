@@ -9,12 +9,15 @@ GIT_VERSION="$(shell git log --date=short --pretty=format:'[%h] @ %cd' -n 1)"
 
 DEFINES=-DGIT_VERSION='$(GIT_VERSION)' -DF_CPU=8000000UL -DSERIAL_BAUDRATE=115200
 
-TARGET_ARCH=-mmcu=atmega8
+# Atmega ID can be '8' for Atmega8; 48, 88, 168, 328 for Atmega48 etc.
+ATMEGA_ID?=8
+
+TARGET_ARCH=-mmcu=atmega$(ATMEGA_ID)
 CXX=avr-g++
 CXXFLAGS=-Os -g -Wall -ffunction-sections -fdata-sections -mcall-prologues $(DEFINES)
 AVRDUDE_DEVICE ?= /dev/ttyUSB0
 AVRPROGRAMMER ?= stk500v2
-AVRDUDE     = avrdude -p m8 -c $(AVRPROGRAMMER) -P $(AVRDUDE_DEVICE)
+AVRDUDE     = avrdude -p m$(ATMEGA_ID) -c $(AVRPROGRAMMER) -P $(AVRDUDE_DEVICE)
 FLASH_CMD   = $(AVRDUDE) -e -U flash:w:main.hex
 LINK=avr-g++ -g $(TARGET_ARCH) -Wl,-gc-sections
 OBJECTS=ft-main.o serial-com.o

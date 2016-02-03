@@ -6,6 +6,26 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <stdint.h>
+
+#if defined (__AVR_ATmega48__) || \
+    defined (__AVR_ATmega88__) || \
+    defined (__AVR_ATmega168__) || \
+    defined (__AVR_ATmega328__)
+// Translation atmega8 name -> atmega328
+#  define USART_RXC_vect USART_RX_vect
+#  define UCSRA          UCSR0A
+#  define UCSRB          UCSR0B
+#  define UCSRC          UCSR0C
+#  define RXC            RXC0
+#  define UDR            UDR0
+#  define UDRE           UDRE0
+#  define RXCIE          RXCIE0
+#  define RXEN           RXEN0
+#  define TXEN           TXEN0
+#  define UCSZ0          UCSZ00
+#  define UCSZ1          UCSZ01
+#endif
 
 template<int BUFFER_BITS> RingBuffer<BUFFER_BITS>::RingBuffer()
   : write_pos_(0), read_pos_(0) {
@@ -57,12 +77,21 @@ SerialCom::SerialCom() : dropped_reads_(0) {
 #if FEATURE_BAUD_CHANGE
   SetBaud(SERIAL_BAUDRATE);
 #else
-  const unsigned int divider = (F_CPU  / 17 / SERIAL_BAUDRATE) - 1;
-  UBRRH = (unsigned char)(divider >> 8);
-  UBRRL = (unsigned char) divider;
+  const uint16_t divider = (F_CPU  / 17 / SERIAL_BAUDRATE) - 1;
+# ifdef UBRRH
+  UBRRH = (uint8_t)(divider >> 8);
+  UBRRL = (uint8_t) divider;
+# else
+  UBRR0 = divider;
+# endif
 #endif
   UCSRB = (1<<RXCIE) | (1<<RXEN) | (1<<TXEN);  // read and write; interrupt read
+#ifdef URSEL
+  // Atmega8 quirk: double registers require select via URSEL
   UCSRC = (1<<URSEL) /*write-reg*/ | (1<<UCSZ1) | (1<<UCSZ0); /*8bit*/
+#else
+  UCSRC = (1<<UCSZ1) | (1<<UCSZ0); /*8bit*/
+#endif
   sei();  // Enable interrupts.
 }
 
