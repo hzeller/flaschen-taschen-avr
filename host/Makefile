@@ -1,5 +1,8 @@
-CFLAGS=-std=c99
+CXXFLAGS=-Wall
 
 all : send-image
 
-send-image: send-image.c
+send-image: send-image.cc
+
+clean :
+	rm -f send-image
