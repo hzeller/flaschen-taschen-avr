@@ -55,7 +55,9 @@ public:
         uint8_t flow_info = 0xff;
         for (int i = 0; i < size_; ++i) {
             write(STDOUT_FILENO, &flow_info, 1);
-            write(STDOUT_FILENO, &strip_[i], 3);
+            write(STDOUT_FILENO, &strip_[i].r, 1);
+            write(STDOUT_FILENO, &strip_[i].g, 1);
+            write(STDOUT_FILENO, &strip_[i].b, 1);
         }
 
         flow_info = 0;
