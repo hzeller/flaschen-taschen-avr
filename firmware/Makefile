@@ -65,7 +65,7 @@ light_ws2812.o: $(WS2811_BASEDIR)/light_ws2812.c
 
 # Make sure to re-compile when the compiler flags change.
 compiler-flags: FORCE
-	@echo '$(CXXFLAGS)' | cmp -s - $@ || echo '$(CXXFLAGS)' > $@
+	@echo '$(CXXFLAGS)$(OBJECTS)' | cmp -s - $@ || echo '$(CXXFLAGS)$(OBJECTS)' > $@
 
 .PHONY: FORCE
 
