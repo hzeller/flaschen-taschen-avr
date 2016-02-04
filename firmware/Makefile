@@ -11,6 +11,10 @@ BPS_RATE?=115200
 # Atmega ID can be '8' for Atmega8; 48, 88, 168, 328, 328p for Atmega48 etc.
 ATMEGA_ID?=8
 
+# FlaschenTaschen device. Can be lpd6803 or ws2811
+FT_DEVICE=lpd6803
+#FT_DEVICE=ws2812
+
 # Paramters for avrdude
 AVRPROGRAMMER ?= stk500v2
 AVRDUDE_DEVICE ?= /dev/ttyUSB0
@@ -25,11 +29,18 @@ else
 endif
 AVRDUDE     = avrdude -p m$(ATMEGA_ID) -c $(AVRPROGRAMMER) $(AVR_PATH)
 TARGET_ARCH=-mmcu=atmega$(ATMEGA_ID)
+
+WS2811_BASEDIR=light_ws2812/light_ws2812_AVR/Light_WS2812
+CC=avr-gcc
 CXX=avr-g++
-CXXFLAGS=-Os -g -Wall -ffunction-sections -fdata-sections -mcall-prologues $(DEFINES) $(TARGET_ARCH)
+CXXFLAGS=-Os -g -Wall \
+    -ffunction-sections -fdata-sections -mcall-prologues \
+    -fpack-struct -fno-move-loop-invariants -fno-tree-scev-cprop \
+    -fno-inline-small-functions \
+    $(DEFINES) $(TARGET_ARCH) -I. -I$(WS2811_BASEDIR)
 FLASH_CMD   = $(AVRDUDE) -e -U flash:w:main.hex
 LINK=avr-g++ -g $(TARGET_ARCH) -Wl,-gc-sections
-OBJECTS=ft-main.o serial-com.o
+OBJECTS=$(FT_DEVICE)-main.o serial-com.o light_ws2812.o
 
 all : main.hex
 
@@ -48,6 +59,9 @@ flash: main.hex
 
 %.o : %.cc compiler-flags
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+light_ws2812.o: $(WS2811_BASEDIR)/light_ws2812.c
+	$(CC) $(CXXFLAGS) -c -o $@ $<
 
 # Make sure to re-compile when the compiler flags change.
 compiler-flags: FORCE
@@ -94,7 +108,7 @@ fuse8:
 # 4 wdton	1   watchdog.
 #
 # 3 eesave      0   save eeprom on chip erase: enabled
-# 2 bootsz1	0	
+# 2 bootsz1	0
 # 1 bootsz0	0
 # 0 bootrst     0  # start at 000
 fuse328:

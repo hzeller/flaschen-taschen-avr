@@ -1,7 +1,9 @@
 Firmware
 ========
 
-Simply pushing things from the serial line to SPI
+Simply pushing things from the serial line to SPI or ws2812.
+
+Edit Makefile to choose `FT_DEVICE` ('flaschen taschen').
 
 ```
  # First time, set the fuses.
