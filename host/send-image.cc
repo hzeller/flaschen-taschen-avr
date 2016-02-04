@@ -1,7 +1,7 @@
 // -*- mode: cc; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // quick hack.
 // strip data output on stdout, so use in a pipe with socat
-// ./send-image foo.ppm bar.ppm | socat STDIO /dev/ttyUSB1,raw,echo=0,crtscts=0,b115200
+// ./send-image foo.ppm | socat STDIO /dev/ttyUSB1,raw,echo=0,crtscts=0,b115200
 
 // BSD-source for usleep()
 #define _BSD_SOURCE
@@ -27,7 +27,8 @@ struct Color {
     uint8_t b;
 };
 
-// Abstract display
+// Interfacing with the strip display. Sends content according to
+// protocol described in /firmware/README.md
 class Display {
 public:
     Display(int width)
@@ -41,7 +42,6 @@ public:
     int height() const { return FLASCHEN_TASCHEN_HEIGHT; }
 
     void SetPixel(int x, int y, const Color &col) {
-        //fprintf(stderr, "%d x %d\n", x, y);
         // Zig-zag assignment of our strips, so every other column has the
         // y-offset reverse.
         int y_off = y % FLASCHEN_TASCHEN_HEIGHT;
@@ -79,7 +79,8 @@ char *ReadLine(FILE *f, char *buffer, size_t len) {
     return result;
 }
 
-// Load PPM and return end of strip.
+// Load PPM and return strip-data as one-dimensional vector (right now, we expect
+// this to be exactly height=5 like in our test-setup).
 std::vector<Color> *LoadPPM(FILE *f) {
 #define EXIT_WITH_MSG(m) { fprintf(stderr, "%s: |%s", m, line); \
         fclose(f); return NULL; }
