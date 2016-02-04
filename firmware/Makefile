@@ -11,7 +11,7 @@ BPS_RATE?=115200
 # Atmega ID can be '8' for Atmega8; 48, 88, 168, 328, 328p for Atmega48 etc.
 ATMEGA_ID?=8
 
-# FlaschenTaschen device. Can be lpd6803 or ws2811
+# FlaschenTaschen device. Can be lpd6803 or ws2812
 FT_DEVICE?=lpd6803
 #FT_DEVICE=ws2812
 
@@ -30,14 +30,14 @@ endif
 AVRDUDE     = avrdude -p m$(ATMEGA_ID) -c $(AVRPROGRAMMER) $(AVR_PATH)
 TARGET_ARCH=-mmcu=atmega$(ATMEGA_ID)
 
-WS2811_BASEDIR=light_ws2812/light_ws2812_AVR/Light_WS2812
+WS2812_BASEDIR=light_ws2812/light_ws2812_AVR/Light_WS2812
 CC=avr-gcc
 CXX=avr-g++
 CXXFLAGS=-Os -g -Wall \
     -ffunction-sections -fdata-sections -mcall-prologues \
     -fpack-struct -fno-move-loop-invariants -fno-tree-scev-cprop \
     -fno-inline-small-functions \
-    $(DEFINES) $(TARGET_ARCH) -I. -I$(WS2811_BASEDIR)
+    $(DEFINES) $(TARGET_ARCH) -I. -I$(WS2812_BASEDIR)
 FLASH_CMD   = $(AVRDUDE) -e -U flash:w:main.hex
 LINK=avr-g++ -g $(TARGET_ARCH) -Wl,-gc-sections
 OBJECTS=$(FT_DEVICE)-main.o serial-com.o light_ws2812.o
@@ -60,7 +60,7 @@ flash: main.hex
 %.o : %.cc compiler-flags
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-light_ws2812.o: $(WS2811_BASEDIR)/light_ws2812.c
+light_ws2812.o: $(WS2812_BASEDIR)/light_ws2812.c
 	$(CC) $(CXXFLAGS) -c -o $@ $<
 
 # Make sure to re-compile when the compiler flags change.
