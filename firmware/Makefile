@@ -12,7 +12,7 @@ BPS_RATE?=115200
 ATMEGA_ID?=8
 
 # FlaschenTaschen device. Can be lpd6803 or ws2811
-FT_DEVICE=lpd6803
+FT_DEVICE?=lpd6803
 #FT_DEVICE=ws2812
 
 # Paramters for avrdude

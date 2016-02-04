@@ -5,9 +5,6 @@
 
 #include "serial-com.h"
 
-// Current pixels.
-#define FLASCHEN_TASCHEN_PIXELS 50
-
 #define SPI_MODE0 0x00
 #define SPI_MODE_MASK 0x0C
 
@@ -63,13 +60,20 @@ static void SendStrip(SerialCom *com) {
     for (int i = 0; i < 4; ++i)
         SPI::transfer(0);
 
-    for (int i = 0; i < FLASCHEN_TASCHEN_PIXELS; ++i) {
-        uint8_t upper = com->read();
-        // Shorter lengths can be sent if followed by nul-byte.
-        if (upper == 0) break;        // Upper bit should've been set.
-        uint8_t lower = com->read();
-        SPI::transfer(upper);
-        SPI::transfer(lower);
+    for (;;) {
+        if (com->read() == 0)  // first byte zero is our sentinel.
+            break;
+        uint8_t r = com->read();
+        uint8_t g = com->read();
+        uint8_t b = com->read();
+        // Data for the LPD6803 https://www.adafruit.com/datasheets/LPD6803.pdf
+        uint16_t data = 0;
+        data |= (1<<15);  // start bit
+        data |= ((r/8) & 0x1F) << 10;
+        data |= ((g/8) & 0x1F) <<  5;
+        data |= ((b/8) & 0x1F) <<  0;
+        SPI::transfer(data >> 8);
+        SPI::transfer(data & 0xFF);
     }
     for (const char *out = "ok"; *out; ++out)
         com->write(*out);

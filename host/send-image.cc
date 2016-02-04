@@ -32,11 +32,11 @@ class Display {
 public:
     Display(int width)
         : size_(width * FLASCHEN_TASCHEN_HEIGHT),
-          strip_(new uint16_t[size_]) {
+          strip_(new Color[size_]) {
     }
 
     ~Display() { delete [] strip_; }
-    
+
     int width() const { return size_ / FLASCHEN_TASCHEN_HEIGHT; }
     int height() const { return FLASCHEN_TASCHEN_HEIGHT; }
 
@@ -48,31 +48,23 @@ public:
         int pos = (x * FLASCHEN_TASCHEN_HEIGHT) +
             ((x % 2 == 0) ? y_off : (FLASCHEN_TASCHEN_HEIGHT-1) - y_off);
         assert(pos < size_);
-        // Data for the LPD6803 https://www.adafruit.com/datasheets/LPD6803.pdf 
-        uint16_t data = 0;
-        data |= (1<<15);  // start bit
-        data |= ((col.r/8) & 0x1F) << 10;
-        data |= ((col.g/8) & 0x1F) <<  5;
-        data |= ((col.b/8) & 0x1F) <<  0;
-        strip_[pos] = data;
+        strip_[pos] = col;
     }
 
     void send() {
+        uint8_t flow_info = 0xff;
         for (int i = 0; i < size_; ++i) {
-            const uint16_t data = strip_[i];
-            uint8_t upper = data >> 8;
-            uint8_t lower = data & 0xFF;
-            write(STDOUT_FILENO, &upper, 1);
-            write(STDOUT_FILENO, &lower, 1);
+            write(STDOUT_FILENO, &flow_info, 1);
+            write(STDOUT_FILENO, &strip_[i], 3);
         }
 
-        uint8_t dummy = 0;  // end sentinel accepted by the firmware.
-        write(STDOUT_FILENO, &dummy, 1);
+        flow_info = 0;
+        write(STDOUT_FILENO, &flow_info, 1);  // end of strip.
     }
 
 private:
     const int size_;
-    uint16_t *strip_;
+    Color *strip_;
 };
 
 
@@ -105,14 +97,14 @@ std::vector<Color> *LoadPPM(FILE *f) {
     line = ReadLine(f, header_buf, sizeof(header_buf));
     if (!line || sscanf(line, "%d ", &value) != 1 || value != 255)
         EXIT_WITH_MSG("Only 255 for maxval allowed.");
-	
+
     // Hardcoded pixel mapping
     if (height != FLASCHEN_TASCHEN_HEIGHT || width < FLASCHEN_TASCHEN_WIDTH) {
         EXIT_WITH_MSG("Uh, FlaschenTaschen is only height 5 right now; at least 10 wide.");
     }
 
     std::vector<Color> *result = new std::vector<Color>();
-    for (int y = 0; y < height; ++y) {	
+    for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
             Color c;
             fread(&c, 3, 1, f);

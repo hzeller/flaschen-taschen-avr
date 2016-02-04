@@ -16,7 +16,10 @@ static cRGB strip[FLASCHEN_TASCHEN_PIXELS];
 // Directly send data from the strip as it comes from the serial
 // line. The end of one record is marked with a nul-byte.
 static void SendStrip(SerialCom *com) {
-    for (int i = 0; i < FLASCHEN_TASCHEN_PIXELS; ++i) {
+    for (uint8_t i = 0; /**/; ++i) {
+        if (com->read() == 0)  // first byte is !0 if there is data.
+            break;
+        if (i >= FLASCHEN_TASCHEN_PIXELS) i = 0; // Uh, got more than needed.
         strip[i].r = com->read();
         strip[i].g = com->read();
         strip[i].b = com->read();
