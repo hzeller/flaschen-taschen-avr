@@ -19,7 +19,7 @@ FT_DEVICE?=lpd6803
 AVRPROGRAMMER ?= stk500v2
 AVRDUDE_DEVICE ?= /dev/ttyUSB0
 
-GIT_VERSION="$(shell git log --date=short --pretty=format:'[%h] @ %cd' -n 1)"
+GIT_VERSION="$(shell git log --date=short --pretty=format:'[%h] @ %cd' -n 1 .)"
 DEFINES=-DGIT_VERSION='$(GIT_VERSION)' -DF_CPU=8000000UL -DSERIAL_BAUDRATE=$(BPS_RATE)
 
 ifeq (x$(AVRDUDE_DEVICE),x)
