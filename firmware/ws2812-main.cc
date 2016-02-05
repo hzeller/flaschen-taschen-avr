@@ -16,8 +16,8 @@ static void SendStrip(SerialCom *com) {
         if (com->read() == 0)  // first byte is !0 if there is data.
             break;
         if (i >= FLASCHEN_TASCHEN_PIXELS) i = 0; // Uh, got more than needed.
-        strip[i].r = com->read();
         strip[i].g = com->read();
+        strip[i].r = com->read();
         strip[i].b = com->read();
     }
 
