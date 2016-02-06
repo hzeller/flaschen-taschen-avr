@@ -87,6 +87,7 @@ static void handle_connection(int fd) {
             reliable_read(fd, &c, size % 3);
         }
         display.Send();
+	usleep(50 * 1000);
     }
     fprintf(stderr, "Done.");
 }
