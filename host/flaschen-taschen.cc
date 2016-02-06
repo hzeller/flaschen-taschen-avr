@@ -13,6 +13,12 @@ FlaschenTaschen::FlaschenTaschen(int width)
 FlaschenTaschen::~FlaschenTaschen() { delete [] strip_; }
 
 void FlaschenTaschen::SetPixel(int x, int y, const Color &col) {
+    if (x < 0 || x >= width() || y < 0 || y >= height())
+        return;
+    // Our boxes are upside down somewhat currently. Correct :)
+    x = width() - x - 1;
+    y = height() - y - 1;
+
     // Zig-zag assignment of our strips, so every other column has the
     // y-offset reverse.
     int y_off = y % FLASCHEN_TASCHEN_HEIGHT;

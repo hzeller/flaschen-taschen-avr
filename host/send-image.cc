@@ -101,9 +101,7 @@ int main(int argc, char *argv[]) {
                 const int img_x = (scroll_start + image_width + x) % image_width;
                 const Color &pixel_color = (*image)[img_x + y * image_width];
                 // Our display is upside down. Lets mirror.
-                display.SetPixel(FLASCHEN_TASCHEN_WIDTH - x - 1,
-                                 FLASCHEN_TASCHEN_HEIGHT - y - 1,
-                                 pixel_color);
+                display.SetPixel(x, y, pixel_color);
             }
         }
 

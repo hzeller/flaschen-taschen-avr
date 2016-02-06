@@ -80,8 +80,7 @@ static void handle_connection(int fd) {
                 any_error = true;
                 break;
             }
-            if (x < display.width() && h.y_pos < display.height())
-                display.SetPixel(x, h.y_pos, c);
+            display.SetPixel(x, h.y_pos, c);
         }
         if (size % 3 != 0) {
             fprintf(stderr, "Discarding wrongly sized data\n");
