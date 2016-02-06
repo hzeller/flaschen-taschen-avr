@@ -14,61 +14,9 @@
 
 #include <vector>
 
-#define FLASCHEN_TASCHEN_WIDTH	10
-#define FLASCHEN_TASCHEN_HEIGHT 5
-#define FLASCHEN_TASCHEN_PIXELS (FLASCHEN_TASCHEN_WIDTH*FLASCHEN_TASCHEN_HEIGHT)
+#include "flaschen-taschen.h"
 
-struct Color {
-    Color() {}
-    Color(int rr, int gg, int bb) : r(rr), g(gg), b(bb){}
-
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
-};
-
-// Interfacing with the strip display. Sends content according to
-// protocol described in /firmware/README.md
-class Display {
-public:
-    Display(int width)
-        : size_(width * FLASCHEN_TASCHEN_HEIGHT),
-          strip_(new Color[size_]) {
-    }
-
-    ~Display() { delete [] strip_; }
-
-    int width() const { return size_ / FLASCHEN_TASCHEN_HEIGHT; }
-    int height() const { return FLASCHEN_TASCHEN_HEIGHT; }
-
-    void SetPixel(int x, int y, const Color &col) {
-        // Zig-zag assignment of our strips, so every other column has the
-        // y-offset reverse.
-        int y_off = y % FLASCHEN_TASCHEN_HEIGHT;
-        int pos = (x * FLASCHEN_TASCHEN_HEIGHT) +
-            ((x % 2 == 0) ? y_off : (FLASCHEN_TASCHEN_HEIGHT-1) - y_off);
-        assert(pos < size_);
-        strip_[pos] = col;
-    }
-
-    void send() {
-        uint8_t flow_info = 0xff;
-        for (int i = 0; i < size_; ++i) {
-            write(STDOUT_FILENO, &flow_info, 1);
-            write(STDOUT_FILENO, &strip_[i].r, 1);
-            write(STDOUT_FILENO, &strip_[i].g, 1);
-            write(STDOUT_FILENO, &strip_[i].b, 1);
-        }
-
-        flow_info = 0;
-        write(STDOUT_FILENO, &flow_info, 1);  // end of strip.
-    }
-
-private:
-    const int size_;
-    Color *strip_;
-};
-
+#define FLASCHEN_TASCHEN_WIDTH 10
 
 // Read line, skip comments.
 char *ReadLine(FILE *f, char *buffer, size_t len) {
@@ -102,8 +50,8 @@ std::vector<Color> *LoadPPM(FILE *f) {
         EXIT_WITH_MSG("Only 255 for maxval allowed.");
 
     // Hardcoded pixel mapping
-    if (height != FLASCHEN_TASCHEN_HEIGHT || width < FLASCHEN_TASCHEN_WIDTH) {
-        EXIT_WITH_MSG("Uh, FlaschenTaschen is only height 5 right now; at least 10 wide.");
+    if (height != FLASCHEN_TASCHEN_HEIGHT) {
+        EXIT_WITH_MSG("Uh, FlaschenTaschen is only height 5 right now");
     }
 
     std::vector<Color> *result = new std::vector<Color>();
@@ -142,7 +90,7 @@ int main(int argc, char *argv[]) {
     const int sleep_ms = 200;
     int scroll_start = 0;
 
-    Display display(FLASCHEN_TASCHEN_WIDTH);
+    FlaschenTaschen display(FLASCHEN_TASCHEN_WIDTH);
 
     for (;;) {
         // Copy a part of our larger image, starting at scroll_start x-pos
@@ -159,7 +107,7 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        display.send();  // ... and show it.
+        display.Send();  // ... and show it.
 
         if (image_width == display.width()) {
             // Image fits. No scrolling needed.
