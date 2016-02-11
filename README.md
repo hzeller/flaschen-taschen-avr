@@ -1,4 +1,4 @@
-[ Obsolete check https://github.com/hzeller/flaschen-taschen instead ]
+[ Obsolete. Check https://github.com/hzeller/flaschen-taschen instead ]
 
 Quick hack on 2016-01-30, to get some first light out of the [FlaschenTaschen]
 project. We just had an RFID [terminal PCB][terminal] lying around, so this
